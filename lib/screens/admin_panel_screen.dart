@@ -423,13 +423,14 @@ class _TagDialogState extends State<_TagDialog> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final tagToSave = _selectedTag ?? _tagSearchController.text.trim();
-    if (tagToSave.isEmpty) {
+    final isEditing = widget.existingTag != null;
+    if (!isEditing && (_selectedTag == null || _selectedTag!.isEmpty)) {
       setState(() {
         _errorMessage = 'Please select a tag from the dropdown';
       });
       return;
     }
+    final tagToSave = isEditing ? _tagSearchController.text.trim() : _selectedTag!;
 
     setState(() {
       _isLoading = true;
@@ -536,9 +537,7 @@ class _TagDialogState extends State<_TagDialog> {
                       },
                 validator: (value) {
                   if (!isEditing && (_selectedTag == null || _selectedTag!.isEmpty)) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please search and select a tag';
-                    }
+                    return 'Please search and select a tag from the dropdown';
                   }
                   return null;
                 },
