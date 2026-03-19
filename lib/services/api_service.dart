@@ -110,7 +110,7 @@ class ApiService {
     }
   }
 
-  Future<List<String>> searchTags(String tag) async {
+  Future<List<TagSearchResult>> searchTags(String tag) async {
     final response = await http.get(
       Uri.parse('$_tagPopularityEndpoint/search?tag=${Uri.encodeComponent(tag)}'),
       headers: {'Content-Type': 'application/json'},
@@ -118,7 +118,9 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = json.decode(response.body);
-      return jsonList.map((item) => item.toString()).toList();
+      return jsonList
+          .map((item) => TagSearchResult.fromJson(item as Map<String, dynamic>))
+          .toList();
     } else {
       throw ApiException(
         statusCode: response.statusCode,

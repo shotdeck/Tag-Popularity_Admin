@@ -5,6 +5,7 @@ class TagPopularity {
   final bool isActive;
   final String? createdAt;
   final String? updatedAt;
+  final String? category;
 
   TagPopularity({
     required this.id,
@@ -13,6 +14,7 @@ class TagPopularity {
     required this.isActive,
     this.createdAt,
     this.updatedAt,
+    this.category,
   });
 
   factory TagPopularity.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class TagPopularity {
       isActive: json['isActive'] as bool? ?? true,
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
+      category: json['category'] as String?,
     );
   }
 
@@ -32,6 +35,7 @@ class TagPopularity {
       'tag': tag,
       'percentage': percentage,
       'isActive': isActive,
+      'category': category,
     };
   }
 
@@ -42,6 +46,7 @@ class TagPopularity {
     bool? isActive,
     String? createdAt,
     String? updatedAt,
+    String? category,
   }) {
     return TagPopularity(
       id: id ?? this.id,
@@ -50,6 +55,7 @@ class TagPopularity {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      category: category ?? this.category,
     );
   }
 }
@@ -58,11 +64,13 @@ class CreateTagPopularityRequest {
   final String tag;
   final int percentage;
   final bool isActive;
+  final String? category;
 
   CreateTagPopularityRequest({
     required this.tag,
     required this.percentage,
     this.isActive = true,
+    this.category,
   });
 
   Map<String, dynamic> toJson() {
@@ -70,6 +78,7 @@ class CreateTagPopularityRequest {
       'tag': tag,
       'percentage': percentage,
       'isActive': isActive,
+      'category': category,
     };
   }
 }
@@ -78,11 +87,13 @@ class UpdateTagPopularityRequest {
   final String tag;
   final int percentage;
   final bool isActive;
+  final String? category;
 
   UpdateTagPopularityRequest({
     required this.tag,
     required this.percentage,
     this.isActive = true,
+    this.category,
   });
 
   Map<String, dynamic> toJson() {
@@ -90,6 +101,21 @@ class UpdateTagPopularityRequest {
       'tag': tag,
       'percentage': percentage,
       'isActive': isActive,
+      'category': category,
     };
+  }
+}
+
+class TagSearchResult {
+  final String tag;
+  final String origin;
+
+  TagSearchResult({required this.tag, required this.origin});
+
+  factory TagSearchResult.fromJson(Map<String, dynamic> json) {
+    return TagSearchResult(
+      tag: json['tag'] as String,
+      origin: json['origin'] as String,
+    );
   }
 }

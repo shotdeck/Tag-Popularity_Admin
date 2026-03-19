@@ -282,6 +282,25 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             ),
             subtitle: Row(
               children: [
+                if (tag.category != null && tag.category!.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.purple[100],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      tag.category!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.purple[800],
+                      ),
+                    ),
+                  ),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -373,8 +392,9 @@ class _TagDialogState extends State<_TagDialog> {
   bool _isLoading = false;
   bool _isSearching = false;
   String? _errorMessage;
-  List<String> _searchResults = [];
+  List<TagSearchResult> _searchResults = [];
   String? _selectedTag;
+  String? _selectedCategory;
 
   @override
   void initState() {
@@ -382,6 +402,7 @@ class _TagDialogState extends State<_TagDialog> {
     if (widget.existingTag != null) {
       _tagSearchController.text = widget.existingTag!.tag;
       _selectedTag = widget.existingTag!.tag;
+      _selectedCategory = widget.existingTag!.category;
       _percentageController.text = widget.existingTag!.percentage.toString();
       _isActive = widget.existingTag!.isActive;
     }
@@ -431,6 +452,7 @@ class _TagDialogState extends State<_TagDialog> {
       return;
     }
     final tagToSave = isEditing ? _tagSearchController.text.trim() : _selectedTag!;
+    final categoryToSave = _selectedCategory;
 
     setState(() {
       _isLoading = true;
@@ -446,6 +468,7 @@ class _TagDialogState extends State<_TagDialog> {
             tag: tagToSave,
             percentage: int.parse(_percentageController.text.trim()),
             isActive: _isActive,
+            category: categoryToSave,
           ),
         );
       } else {
@@ -454,6 +477,7 @@ class _TagDialogState extends State<_TagDialog> {
             tag: tagToSave,
             percentage: int.parse(_percentageController.text.trim()),
             isActive: _isActive,
+            category: categoryToSave,
           ),
         );
       }
@@ -556,14 +580,15 @@ class _TagDialogState extends State<_TagDialog> {
                     shrinkWrap: true,
                     itemCount: _searchResults.length,
                     itemBuilder: (context, index) {
-                      final tagName = _searchResults[index];
+                      final result = _searchResults[index];
                       return ListTile(
                         dense: true,
-                        title: Text(tagName),
+                        title: Text('${result.origin}: ${result.tag}'),
                         onTap: () {
                           setState(() {
-                            _selectedTag = tagName;
-                            _tagSearchController.text = tagName;
+                            _selectedTag = result.tag;
+                            _selectedCategory = result.origin;
+                            _tagSearchController.text = result.tag;
                             _searchResults = [];
                           });
                         },
@@ -578,11 +603,13 @@ class _TagDialogState extends State<_TagDialog> {
                     children: [
                       Icon(Icons.check_circle, color: Colors.green[400], size: 16),
                       const SizedBox(width: 4),
-                      Text(
-                        'Selected: $_selectedTag',
-                        style: TextStyle(
-                          color: Colors.green[400],
-                          fontSize: 12,
+                      Expanded(
+                        child: Text(
+                          'Selected: ${_selectedCategory != null ? '$_selectedCategory: ' : ''}$_selectedTag',
+                          style: TextStyle(
+                            color: Colors.green[400],
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -590,6 +617,7 @@ class _TagDialogState extends State<_TagDialog> {
                         onTap: () {
                           setState(() {
                             _selectedTag = null;
+                            _selectedCategory = null;
                             _tagSearchController.clear();
                             _searchResults = [];
                           });
@@ -599,6 +627,16 @@ class _TagDialogState extends State<_TagDialog> {
                     ],
                   ),
                 ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: TextEditingController(text: _selectedCategory ?? widget.existingTag?.category ?? ''),
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  hintText: 'Auto-filled from tag selection',
+                  border: OutlineInputBorder(),
+                ),
+                readOnly: true,
+              ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _percentageController,
