@@ -3,7 +3,7 @@ import 'dart:html' as html;
 import 'screens/admin_panel_screen.dart';
 import 'services/api_service.dart';
 
-const String apiBaseUrl = 'https://shotdecksearch.azurewebsites.net';
+const String apiBaseUrl = 'https://shotdeckadminpanelapi.azurewebsites.net';
 const String _authKey = 'tag_popularity_authenticated';
 
 const Color shotDeckCyan = Color(0xFF00B4D8);
