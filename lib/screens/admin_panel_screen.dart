@@ -32,14 +32,21 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   }
 
   void _filterTags() {
-    final query = _searchController.text.toLowerCase();
+    final query = _searchController.text.toLowerCase().trim();
     setState(() {
       if (query.isEmpty) {
         _filteredTags = _tags;
       } else {
-        _filteredTags = _tags
-            .where((tag) => tag.tag.toLowerCase().contains(query))
-            .toList();
+        // Split query into words for cross-field matching.
+        // e.g. "West cinematographer" matches records where "West" is in the
+        // tag and "cinematographer" is in the category (or vice versa).
+        final words = query.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+        _filteredTags = _tags.where((tag) {
+          final tagLower = tag.tag.toLowerCase();
+          final categoryLower = (tag.category ?? '').toLowerCase();
+          return words.every((word) =>
+            tagLower.contains(word) || categoryLower.contains(word));
+        }).toList();
       }
     });
   }
