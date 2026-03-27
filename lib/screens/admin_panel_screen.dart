@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/tag_popularity.dart';
 import '../services/api_service.dart';
@@ -402,6 +403,8 @@ class _TagDialogState extends State<_TagDialog> {
   List<TagSearchResult> _searchResults = [];
   String? _selectedTag;
   String? _selectedCategory;
+  int _searchVersion = 0;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -417,15 +420,21 @@ class _TagDialogState extends State<_TagDialog> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _tagSearchController.dispose();
     _percentageController.dispose();
     super.dispose();
   }
 
-  Future<void> _searchTags(String query) async {
+  void _onSearchChanged(String query) {
+    _debounceTimer?.cancel();
+    _selectedTag = null;
+    _selectedCategory = null;
+
     if (query.trim().isEmpty) {
       setState(() {
         _searchResults = [];
+        _isSearching = false;
       });
       return;
     }
@@ -434,13 +443,26 @@ class _TagDialogState extends State<_TagDialog> {
       _isSearching = true;
     });
 
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _searchTags(query.trim());
+    });
+  }
+
+  Future<void> _searchTags(String query) async {
+    _searchVersion++;
+    final currentVersion = _searchVersion;
+
     try {
-      final results = await widget.apiService.searchTags(query.trim());
+      final results = await widget.apiService.searchTags(query);
+      if (currentVersion != _searchVersion) return;
+      if (!mounted) return;
       setState(() {
         _searchResults = results;
         _isSearching = false;
       });
     } catch (e) {
+      if (currentVersion != _searchVersion) return;
+      if (!mounted) return;
       setState(() {
         _searchResults = [];
         _isSearching = false;
@@ -562,10 +584,7 @@ class _TagDialogState extends State<_TagDialog> {
                 readOnly: isEditing,
                 onChanged: isEditing
                     ? null
-                    : (value) {
-                        _selectedTag = null;
-                        _searchTags(value);
-                      },
+                    : _onSearchChanged,
                 validator: (value) {
                   if (!isEditing && (_selectedTag == null || _selectedTag!.isEmpty)) {
                     return 'Please search and select a tag from the dropdown';
