@@ -106,6 +106,20 @@ class UpdateTagPopularityRequest {
   }
 }
 
+class SyncResult {
+  final int rulesProcessed;
+  final int totalImagesUpdated;
+
+  SyncResult({required this.rulesProcessed, required this.totalImagesUpdated});
+
+  factory SyncResult.fromJson(Map<String, dynamic> json) {
+    return SyncResult(
+      rulesProcessed: json['rulesProcessed'] as int? ?? 0,
+      totalImagesUpdated: json['totalImagesUpdated'] as int? ?? 0,
+    );
+  }
+}
+
 class TagSearchResult {
   final String tag;
   final String origin;
