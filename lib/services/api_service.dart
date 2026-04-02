@@ -129,6 +129,40 @@ class ApiService {
     }
   }
 
+  Future<bool> hasUnsyncedRules() async {
+    final response = await http.get(
+      Uri.parse('$_tagPopularityEndpoint/has-unsynced'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      return result['hasUnsynced'] == true;
+    } else {
+      throw ApiException(
+        statusCode: response.statusCode,
+        message: _parseErrorMessage(response.body),
+      );
+    }
+  }
+
+  Future<SyncResult> applyRules() async {
+    final response = await http.post(
+      Uri.parse('$_tagPopularityEndpoint/apply'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      return SyncResult.fromJson(result);
+    } else {
+      throw ApiException(
+        statusCode: response.statusCode,
+        message: _parseErrorMessage(response.body),
+      );
+    }
+  }
+
   String _parseErrorMessage(String body) {
     try {
       final jsonBody = json.decode(body);
