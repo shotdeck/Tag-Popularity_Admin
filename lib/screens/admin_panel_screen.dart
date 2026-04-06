@@ -15,6 +15,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   List<TagPopularity> _tags = [];
   List<TagPopularity> _filteredTags = [];
   bool _isLoading = false;
+  bool _hasUnsyncedChanges = false;
+  bool _isSyncing = false;
   String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
 
@@ -22,6 +24,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   void initState() {
     super.initState();
     _loadTags();
+    _checkUnsyncedRules();
     _searchController.addListener(_filterTags);
   }
 
@@ -78,6 +81,51 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
   }
 
+  Future<void> _checkUnsyncedRules() async {
+    try {
+      final hasUnsynced = await widget.apiService.hasUnsyncedRules();
+      if (mounted) {
+        setState(() => _hasUnsyncedChanges = hasUnsynced);
+      }
+    } catch (_) {
+      // Silently fail — button stays in current state
+    }
+  }
+
+  Future<void> _sync() async {
+    setState(() => _isSyncing = true);
+
+    try {
+      final result = await widget.apiService.applyRules();
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+          _hasUnsyncedChanges = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Sync complete: ${result.rulesProcessed} rules processed, '
+              '${result.totalImagesUpdated} images updated',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadTags();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sync failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _showAddDialog() async {
     final result = await showDialog<TagPopularity>(
       context: context,
@@ -89,6 +137,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     if (result != null) {
       _loadTags();
+      setState(() => _hasUnsyncedChanges = true);
     }
   }
 
@@ -104,6 +153,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     if (result != null) {
       _loadTags();
+      setState(() => _hasUnsyncedChanges = true);
     }
   }
 
@@ -131,6 +181,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       try {
         await widget.apiService.delete(tag.id);
         _loadTags();
+        setState(() => _hasUnsyncedChanges = true);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Deleted "${tag.tag}"')),
@@ -172,6 +223,27 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           ],
         ),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: _isSyncing
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    ),
+                  )
+                : ElevatedButton.icon(
+                    onPressed: _hasUnsyncedChanges ? _sync : null,
+                    icon: const Icon(Icons.sync, size: 18),
+                    label: const Text('Sync'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _hasUnsyncedChanges ? Colors.orange : null,
+                      foregroundColor: _hasUnsyncedChanges ? Colors.white : null,
+                    ),
+                  ),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh',
