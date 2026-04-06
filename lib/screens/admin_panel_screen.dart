@@ -423,6 +423,46 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     ),
                   ),
                 ),
+                if (tag.baseWeightedScore != null) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[100],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Base: ${tag.baseWeightedScore!.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange[800],
+                      ),
+                    ),
+                  ),
+                ],
+                if (tag.weightedScore != null) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.teal[100],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Weighted: ${tag.weightedScore!.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.teal[800],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             trailing: Row(

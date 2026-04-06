@@ -6,6 +6,8 @@ class TagPopularity {
   final String? createdAt;
   final String? updatedAt;
   final String? category;
+  final double? baseWeightedScore;
+  final double? weightedScore;
 
   TagPopularity({
     required this.id,
@@ -15,6 +17,8 @@ class TagPopularity {
     this.createdAt,
     this.updatedAt,
     this.category,
+    this.baseWeightedScore,
+    this.weightedScore,
   });
 
   factory TagPopularity.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class TagPopularity {
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
       category: json['category'] as String?,
+      baseWeightedScore: (json['baseWeightedScore'] as num?)?.toDouble(),
+      weightedScore: (json['weightedScore'] as num?)?.toDouble(),
     );
   }
 
